@@ -1,22 +1,39 @@
 from django.shortcuts import render
+from django.views import View
+from django.views.generic import ListView
+
 from catalog.models import Product, Category
 
 
-def home(request):
-    context = {
-        'object_list': Category.objects.all(),
+class IndexListView(ListView):
+    model = Category
+    template_name = 'catalog/index.html'
+    context_object_name = 'object_list'
+    extra_context = {
         'title': 'Skystore',
-        'description': 'Skystore - это отличный вариант хранения ваших плагинов и примеров кода, который вы бы хотели продать',
+        'description': 'Skystore - это отличный вариант хранения ваших плагинов и примеров кода, который вы бы хотели '
+                       'продать',
     }
-    return render(request, 'catalog/home.html', context)
 
 
-def contacts(request):
-    return render(request, 'catalog/contacts.html')
+class ContactsView(View):
+    @staticmethod
+    def get(request):
+        return render(request, 'catalog/contacts.html')
 
 
-def products(request, pk):
-    context = {
-        'object_list': Product.objects.filter(category_id=pk)
-    }
-    return render(request, 'catalog/products.html', context)
+class CategoryListView(ListView):
+    model = Product
+    template_name = 'catalog/category.html'
+    context_object_name = 'object_list'
+
+
+class ProductsListView(ListView):
+    model = Product
+    template_name = 'catalog/products.html'
+    context_object_name = 'object_list'
+
+    def get_queryset(self):
+        pk = self.kwargs['pk']
+        category = Category.objects.get(pk=pk)
+        return Product.objects.filter(category=category)
